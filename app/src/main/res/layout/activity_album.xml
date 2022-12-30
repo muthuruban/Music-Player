@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/album_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/main_bg"
+    tools:context=".activity.AlbumActivity">
+
+    <RelativeLayout
+        android:id="@+id/album_name_container"
+        android:layout_width="match_parent"
+        android:layout_height="30dp">
+
+        <ImageView
+            android:id="@+id/back_frm_album"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="10dp"
+            android:src="@drawable/ic_arrow_back" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true"
+            android:layout_marginLeft="70dp"
+            android:gravity="center_horizontal"
+            android:singleLine="true"
+            android:text="Album Name"
+            android:textSize="20dp" />
+    </RelativeLayout>
+
+    <ImageView
+        android:id="@+id/curr_album_art"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:layout_below="@+id/album_name_container"
+        android:scaleType="centerCrop"
+        android:src="@color/colorAccent" />
+
+    <ImageView
+        android:id="@+id/album_image_over_gradient"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:layout_below="@+id/album_name_container" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/album_track_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/curr_album_art" />
+
+</RelativeLayout>

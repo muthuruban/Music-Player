@@ -1,0 +1,10 @@
+
+<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <ListPreference
+        android:defaultValue="0"
+        android:entries="@array/selection_entities"
+        android:entryValues="@array/selection_values"
+        android:key="themeSelection"
+        android:title="Themes"
+        android:icon="@drawable/ic_round_brightness_6_24"/>
+</androidx.preference.PreferenceScreen>

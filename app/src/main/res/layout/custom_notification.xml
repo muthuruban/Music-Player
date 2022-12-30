@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="120dp"
+    android:paddingStart="10dp"
+    android:paddingTop="10dp"
+    android:paddingEnd="10dp"
+    android:paddingBottom="10dp">
+
+    <RelativeLayout
+        android:id="@+id/notify_top_layer"
+        android:layout_width="match_parent"
+        android:layout_height="24dp">
+
+        <ImageView
+            android:id="@+id/music_ico"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:src="@drawable/ic_round_music_ico_24" />
+
+        <TextView
+            android:id="@+id/app_name"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="5dp"
+            android:layout_toEndOf="@+id/music_ico"
+            android:gravity="center_vertical"
+            android:text="Music Player" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:layout_toEndOf="@+id/app_name"
+            android:text="-"
+            android:textSize="18dp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/notify_album_name"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="20dp"
+            android:layout_toEndOf="@+id/app_name"
+            android:text="Album"
+            android:ellipsize="marquee"
+            android:gravity="center_vertical"
+            android:layout_toStartOf="@+id/notify_close_btn"
+            android:singleLine="true"/>
+
+        <ImageView
+            android:id="@+id/notify_close_btn"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:src="@drawable/ic_round_close" />
+    </RelativeLayout>
+
+    <ImageView
+        android:id="@+id/notify_album_art"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_below="@+id/notify_top_layer"
+        android:layout_margin="10dp"
+        android:src="@drawable/ic_music_cover"
+        app:layout_constraintLeft_toLeftOf="parent" />
+
+    <TextView
+        android:id="@+id/notify_music_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/notify_top_layer"
+        android:layout_marginTop="15dp"
+        android:layout_toEndOf="@id/notify_album_art"
+        android:text="Music Name"
+        android:ellipsize="marquee"
+        android:gravity="center_vertical"
+        android:layout_marginEnd="10dp"
+        android:singleLine="true"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="24dp"
+        android:layout_below="@+id/notify_music_name"
+        android:layout_centerHorizontal="true"
+        android:layout_toEndOf="@+id/notify_album_art"
+        android:layout_marginTop="10dp"
+        android:foregroundGravity="center_horizontal"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/action_fav"
+            android:layout_width="30dp"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="10dp"
+            android:src="@drawable/ic_favorite_border_24" />
+
+        <ImageView
+            android:id="@+id/action_prev"
+            android:layout_width="30dp"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="10dp"
+            android:src="@drawable/ic_round_skip_previous" />
+
+        <ImageView
+            android:id="@+id/action_play"
+            android:layout_width="30dp"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="10dp"
+            android:src="@drawable/ic_round_play_arrow" />
+
+        <ImageView
+            android:id="@+id/action_next"
+            android:layout_width="30dp"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:src="@drawable/ic_round_skip_next" />
+
+    </LinearLayout>
+
+
+</RelativeLayout>
