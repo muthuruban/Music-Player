@@ -6,10 +6,10 @@ android {
 
     signingConfigs {
         debug {
-            storeFile file('C:\\Users\\HP\\Desktop\\fragmented_key_store\\fragmentedkey2.jks')
-            storePassword 'Ruban@111'
+            storeFile file('C:\\Users\\91996\\Desktop\\fargkey.jks')
+            storePassword 'Shruthika@111'
             keyAlias 'key0'
-            keyPassword 'Ruban@111'
+            keyPassword 'Shruthika@111'
         }
     }
     compileSdkVersion 31

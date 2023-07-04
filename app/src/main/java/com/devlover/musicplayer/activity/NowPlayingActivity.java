@@ -66,7 +66,6 @@ public class NowPlayingActivity extends AppCompatActivity implements ActionPlayC
     ImageView albumArt;
     int position = -1;
     Uri uri;
-    //    static MediaPlayer mediaPlayer;
     public static ArrayList<SongData> listOfSongs = new ArrayList<>();
     private Handler handler = new Handler();
     private Thread playThread, prevThread, nextThread;

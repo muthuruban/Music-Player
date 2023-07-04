@@ -64,7 +64,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         permission();
 
     }
-
+//    Getting permission
     private void permission() {
         if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
@@ -73,7 +73,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show();
         }
     }
-
+//    Declaring Fragment
     HomeFragment homeFragment = new HomeFragment();
     FavoriteFragment favoriteFragment = new FavoriteFragment();
     PlaylistFragment playlistFragment = new PlaylistFragment();

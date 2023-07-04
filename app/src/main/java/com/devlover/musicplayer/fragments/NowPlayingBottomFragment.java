@@ -220,7 +220,7 @@ public class NowPlayingBottomFragment extends Fragment implements ServiceConnect
     public void onPause() {
         super.onPause();
         if (getContext() != null) {
-            getContext().unbindService(NowPlayingBottomFragment.this);
+//            getContext().unbindService(NowPlayingBottomFragment.this);
         }
     }
 

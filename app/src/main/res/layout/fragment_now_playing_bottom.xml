@@ -19,9 +19,9 @@
             android:id="@+id/nowPlaying_art_bottom"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:scaleType="centerCrop"
-            android:layout_marginTop="1dp"
             android:layout_marginLeft="1dp"
+            android:layout_marginTop="1dp"
+            android:scaleType="centerCrop"
             android:src="@drawable/ic_music_cover" />
 
         <TextView
@@ -49,7 +49,7 @@
             android:layout_toLeftOf="@+id/skip_prev_bottom"
             android:layout_toRightOf="@+id/nowPlaying_art_bottom"
             android:singleLine="true"
-            android:text="By: Muthu Ruban"
+
             android:textColor="?android:textColorPrimary" />
         <ProgressBar
             android:id="@+id/bottom_player_progressbar"

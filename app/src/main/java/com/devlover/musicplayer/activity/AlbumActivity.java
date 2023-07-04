@@ -52,7 +52,6 @@ public class AlbumActivity extends AppCompatActivity {
         byte[] image = getAlbumArt(albumTrack.get(0).getPath());
         Bitmap bitmap;
         if(image!=null){
-//            Glide.with(this).load(image).into(albumArt);
             bitmap = BitmapFactory.decodeByteArray(image,0,image.length);
             ImageAnimation(this,albumArt,bitmap);
             Palette.from(bitmap).generate(new Palette.PaletteAsyncListener() {
@@ -67,16 +66,7 @@ public class AlbumActivity extends AppCompatActivity {
                         GradientDrawable gradientDrawable = new GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP, new int[]{swatch.getRgb(), 0x00000000});
                         gradient.setBackground(gradientDrawable);
                         GradientDrawable gradientDrawableBg = new GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP, new int[]{swatch.getRgb(), swatch.getRgb()});
-                        container.setBackground(gradientDrawableBg);
-//                        trackName.setTextColor(swatch.getBodyTextColor());
-//                        artistName.setTextColor(swatch.getTitleTextColor());
-//                        albumName.setTextColor(swatch.getBodyTextColor());
-//                        currentDuration.setTextColor(swatch.getBodyTextColor());
-//                        totalDuration.setTextColor(swatch.getBodyTextColor());
-//                        seekBarCtrl.setBackgroundColor(swatch.getRgb());
-//                        seekBarCtrl.getProgressDrawable().setColorFilter(swatch.getBodyTextColor(), PorterDuff.Mode.MULTIPLY);
-//                        seekBarCtrl.getThumb().setColorFilter(swatch.getBodyTextColor(), PorterDuff.Mode.SRC_ATOP);
-                    } else {
+                        container.setBackground(gradientDrawableBg);} else {
                         ImageView gradient = findViewById(R.id.album_image_over_gradient);
                         RelativeLayout container = findViewById(R.id.album_container);
                         gradient.setBackgroundResource(R.drawable.gradient_bg);
@@ -85,14 +75,10 @@ public class AlbumActivity extends AppCompatActivity {
                         gradient.setBackground(gradientDrawable);
                         GradientDrawable gradientDrawableBg = new GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP, new int[]{swatch.getRgb(), swatch.getRgb()});
                         container.setBackground(gradientDrawableBg);
-//                        trackName.setTextColor(swatch.getBodyTextColor());
-//                        artistName.setTextColor(swatch.getTitleTextColor());
-//                        albumName.setTextColor(swatch.getBodyTextColor());
                     }
                 }
             });
         }else{
-//            Glide.with(this).load(R.drawable.ic_huawei_music_cover_round).into(albumArt);
             bitmap = BitmapFactory.decodeResource(getResources(),R.drawable.ic_music_cover);
             ImageAnimation(this,albumArt,bitmap);
             Palette.from(bitmap).generate(new Palette.PaletteAsyncListener() {
