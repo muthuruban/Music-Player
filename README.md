@@ -5,7 +5,8 @@ Music player for android platform with playback controls
 
 # Screenshots
 
-![alt text](https://github.com/muthuruban/Music-Player/blob/main/screenshots/HomeFragment1.jpg?raw=true)  
+<img src="https://github.com/muthuruban/Music-Player/blob/main/screenshots/HomeFragment1.jpg" width="30%" height="30%">
+
 ![alt text](https://github.com/muthuruban/Music-Player/blob/main/screenshots/HomeFragment2.jpg?raw=true) 
 ![alt text](https://github.com/muthuruban/Music-Player/blob/main/screenshots/NowPlayingActivity.jpg?raw=true) 
 ![alt text](https://github.com/muthuruban/Music-Player/blob/main/screenshots/AlbumActivity.jpg?raw=true) 
