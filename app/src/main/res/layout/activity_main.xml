@@ -11,30 +11,119 @@
         android:id="@+id/flFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/fragment_playerController" />
+        android:layout_above="@+id/bottom_player_container" />
 
-    <FrameLayout
-        android:id="@+id/fragment_playerController"
+    <RelativeLayout
+        android:id="@+id/bottom_player_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/bottomNavigationWidget">
-        <fragment
+        android:layout_above="@id/bottomNavigationWidget"
+        android:paddingStart="5dp"
+        android:paddingTop="5dp"
+        android:paddingEnd="10dp"
+        android:paddingBottom="5dp">
+
+        <ImageView
+            android:id="@+id/nowPlaying_art_bottom"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginLeft="1dp"
+            android:layout_marginTop="1dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_music_cover" />
+
+        <TextView
+            android:id="@+id/nowPlaying_songName_bottom"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:name="com.devlover.musicplayer.fragments.NowPlayingBottomFragment"
-            tools:layout="@layout/fragment_now_playing_bottom"/>
-    </FrameLayout>
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_toLeftOf="@+id/skip_prev_bottom"
+            android:layout_toRightOf="@+id/nowPlaying_art_bottom"
+            android:singleLine="true"
+            android:text="Music Player"
+            android:textColor="?android:textColorPrimary"
+            android:textSize="18dp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/nowPlaying_songArtist_bottom"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/nowPlaying_songName_bottom"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginRight="10dp"
+            android:layout_toLeftOf="@+id/skip_prev_bottom"
+            android:layout_toRightOf="@+id/nowPlaying_art_bottom"
+            android:singleLine="true"
+            android:text="By: Muthu Ruban"
+            android:textColor="?android:textColorPrimary" />
+
+        <ProgressBar
+            android:id="@+id/bottom_player_progressbar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_centerVertical="true"
+            android:layout_gravity="center"
+            android:layout_margin="5dp"
+            android:progress="50"
+            android:rotation="270"
+            android:layout_toLeftOf="@+id/skip_next_bottom"
+            android:progressDrawable="@drawable/square_progressbar" />
+
+        <ImageView
+            android:id="@+id/skip_prev_bottom"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_centerVertical="true"
+            android:layout_margin="5dp"
+            android:layout_toLeftOf="@+id/play_pause_bottom"
+            android:src="@drawable/ic_round_skip_previous" />
+
+        <ImageView
+            android:id="@+id/play_pause_bottom"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            android:layout_toLeftOf="@+id/skip_next_bottom"
+            android:src="@drawable/ic_round_play_circle" />
+
+        <ImageView
+            android:id="@+id/skip_next_bottom"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_centerVertical="true"
+            android:layout_margin="5dp"
+            android:layout_toLeftOf="@+id/queue_list_bottom"
+            android:src="@drawable/ic_skip_next" />
+
+        <ImageView
+            android:id="@+id/queue_list_bottom"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:src="@drawable/ic_queue_music_icon" />
+
+
+    </RelativeLayout>
 
     <androidx.cardview.widget.CardView
         android:id="@+id/bottomNavigationWidget"
         android:layout_width="match_parent"
         android:layout_height="64dp"
         android:layout_alignParentBottom="true"
+        app:cardBackgroundColor="@android:color/transparent"
+        app:cardElevation="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:cardBackgroundColor="@android:color/transparent"
-        app:cardElevation="0dp">
+        app:layout_constraintStart_toStartOf="parent">
 
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/bottomNavigationView"

@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-import android.graphics.drawable.Drawable;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Bundle;
@@ -21,14 +20,14 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.devlover.musicplayer.R;
 import com.devlover.musicplayer.activity.NowPlayingActivity;
+import com.devlover.musicplayer.model.SongData;
 import com.devlover.musicplayer.playback.MusicService;
 
-import org.w3c.dom.Text;
+import java.util.ArrayList;
 
 import static android.content.Context.MODE_PRIVATE;
 import static com.devlover.musicplayer.activity.MainActivity.ARTIST_NAME;
@@ -52,6 +51,7 @@ public class NowPlayingBottomFragment extends Fragment implements ServiceConnect
     int position = -1;
     Uri uri;
     private Context context;
+    public static ArrayList<SongData> listOfSongs = new ArrayList<>();
 
     public NowPlayingBottomFragment() {
         // Required empty public constructor
@@ -68,8 +68,8 @@ public class NowPlayingBottomFragment extends Fragment implements ServiceConnect
         musicQueueButton = view.findViewById(R.id.queue_list_bottom);
         albumArt = view.findViewById(R.id.nowPlaying_art_bottom);
         progressBar = view.findViewById(R.id.bottom_player_progressbar);
-
         //New
+        position = getActivity().getIntent().getIntExtra("position", -1);
         progressBar.setMax(100);
         progressBar.setProgress(100);
         playerLayout = view.findViewById(R.id.bottom_player_container);
@@ -91,9 +91,9 @@ public class NowPlayingBottomFragment extends Fragment implements ServiceConnect
                     musicService.nextButtonClicked();
                     if (getActivity() != null) {
                         SharedPreferences.Editor editor = getActivity().getSharedPreferences(MUSIC_FILE_LAST_PLAYED, MODE_PRIVATE).edit();
-                        editor.putString(MUSIC_FILE, musicService.songDataArrayList.get(musicService.position).getPath());
-                        editor.putString(ARTIST_NAME, musicService.songDataArrayList.get(musicService.position).getArtist());
-                        editor.putString(SONG_NAME, musicService.songDataArrayList.get(musicService.position).getTitle());
+                        editor.putString(MUSIC_FILE, musicService.songDataArrayListServ.get(musicService.position).getPath());
+                        editor.putString(ARTIST_NAME, musicService.songDataArrayListServ.get(musicService.position).getArtist());
+                        editor.putString(SONG_NAME, musicService.songDataArrayListServ.get(musicService.position).getTitle());
                         editor.apply();
                         SharedPreferences preferences = getActivity().getSharedPreferences(MUSIC_FILE_LAST_PLAYED, MODE_PRIVATE);
                         String value = preferences.getString(MUSIC_FILE, null);
@@ -136,9 +136,9 @@ public class NowPlayingBottomFragment extends Fragment implements ServiceConnect
                     musicService.prevButtonClicked();
                     if (getActivity() != null) {
                         SharedPreferences.Editor editor = getActivity().getSharedPreferences(MUSIC_FILE_LAST_PLAYED, MODE_PRIVATE).edit();
-                        editor.putString(MUSIC_FILE, musicService.songDataArrayList.get(musicService.position).getPath());
-                        editor.putString(ARTIST_NAME, musicService.songDataArrayList.get(musicService.position).getArtist());
-                        editor.putString(SONG_NAME, musicService.songDataArrayList.get(musicService.position).getTitle());
+                        editor.putString(MUSIC_FILE, musicService.songDataArrayListServ.get(musicService.position).getPath());
+                        editor.putString(ARTIST_NAME, musicService.songDataArrayListServ.get(musicService.position).getArtist());
+                        editor.putString(SONG_NAME, musicService.songDataArrayListServ.get(musicService.position).getTitle());
                         editor.apply();
                         SharedPreferences preferences = getActivity().getSharedPreferences(MUSIC_FILE_LAST_PLAYED, MODE_PRIVATE);
                         String value = preferences.getString(MUSIC_FILE, null);
@@ -233,10 +233,10 @@ public class NowPlayingBottomFragment extends Fragment implements ServiceConnect
             return art;
         } catch (Exception e) {
             Log.e("AlbumArt : ", path);
-
         }
         return null;
     }
+
 
     @Override
     public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
@@ -248,5 +248,7 @@ public class NowPlayingBottomFragment extends Fragment implements ServiceConnect
     public void onServiceDisconnected(ComponentName componentName) {
         musicService = null;
     }
+
+
 }
 

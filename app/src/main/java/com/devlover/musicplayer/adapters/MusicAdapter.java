@@ -16,8 +16,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.devlover.musicplayer.R;
+import com.devlover.musicplayer.activity.MainActivity;
 import com.devlover.musicplayer.activity.NowPlayingActivity;
+import com.devlover.musicplayer.fragments.NowPlayingBottomFragment;
 import com.devlover.musicplayer.model.SongData;
+import com.devlover.musicplayer.playback.MusicService;
 
 import java.util.ArrayList;
 
@@ -66,6 +69,7 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.SongViewHold
             public void onClick(View view) {
                 Intent intent = new Intent(context, NowPlayingActivity.class);
                 intent.putExtra("position",position);
+                intent.putExtra("Activity","SongListActivity");
                 context.startActivity(intent);
             }
         });

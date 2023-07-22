@@ -15,14 +15,22 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.devlover.musicplayer.R;
 import com.devlover.musicplayer.fragments.FavoriteFragment;
 import com.devlover.musicplayer.fragments.HomeFragment;
@@ -35,8 +43,12 @@ import com.devlover.musicplayer.model.SongData;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
+import java.util.Random;
 
-public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
+import static com.devlover.musicplayer.adapters.AlbumTracksAdapter.albumFiles;
+import static com.devlover.musicplayer.adapters.MusicAdapter.songDataArrayList;
+
+public class MainActivity extends AppCompatActivity implements ActionPlayControls, BottomNavigationView.OnNavigationItemSelectedListener, ServiceConnection {
 
     public static boolean SHOW_BOTTOM_PLAYER = false;
     String SONG_SORT_PREF = "SortingOrder";
@@ -50,8 +62,21 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     public static final String ARTIST_NAME = "ARTIST_NAME";
     public static String PATH_TO_BOTTOMPLAYER = null;
     public static String _SONG_NAME_ = null;
+    public static int _CURRENT_SONG_POS_ = 0;
     public static String _ARTIST_NAME_ = null;
+
+    //BottomPlayer
+    ImageView playButton, skipNextButton, skipPrevButton, musicQueueButton, albumArt;
+    TextView songName, songArtist;
+    RelativeLayout playerLayout;
+    View view;
+    ProgressBar progressBar;
     int position = -1;
+    Uri uri;
+    public static ArrayList<SongData> listOfSongs = new ArrayList<>();
+    private Handler handler = new Handler();
+    private Thread playThread, prevThread, nextThread;
+    public static boolean TRACK_PLAYING = false;
     MusicService musicService;
 
     @Override
@@ -61,10 +86,50 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         bottomNavigationView = findViewById(R.id.bottomNavigationView);
         bottomNavigationView.setOnNavigationItemSelectedListener(this);
         bottomNavigationView.setSelectedItemId(R.id.home_nav);
+        songArtist = findViewById(R.id.nowPlaying_songArtist_bottom);
+        songName = findViewById(R.id.nowPlaying_songName_bottom);
+        skipPrevButton = findViewById(R.id.skip_prev_bottom);
+        skipPrevButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                prevBtnClicked();
+            }
+        });
+        playButton = findViewById(R.id.play_pause_bottom);
+        playButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                playPauseBtnClicked();
+            }
+        });
+        skipNextButton = findViewById(R.id.skip_next_bottom);
+        skipNextButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                nextBtnClicked();
+            }
+        });
+        musicQueueButton = findViewById(R.id.queue_list_bottom);
+        albumArt = findViewById(R.id.nowPlaying_art_bottom);
+        progressBar = findViewById(R.id.bottom_player_progressbar);
+        playerLayout = findViewById(R.id.bottom_player_container);
+        playerLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this, NowPlayingActivity.class);
+                intent.putExtra("position", position);
+                intent.putExtra("Activity", "BottomPlayer");
+                startActivity(intent);
+            }
+        });
+        songDataArrayList = getAllSongs(this);
+        if (!getAllSongs(this).isEmpty()) {
+            Toast.makeText(this,"Songs Fetched",Toast.LENGTH_SHORT).show();
+            position = 1;
+        }
+        getIntentMethod();
         permission();
-
     }
-//    Getting permission
     private void permission() {
         if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
@@ -73,7 +138,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show();
         }
     }
-//    Declaring Fragment
+
     HomeFragment homeFragment = new HomeFragment();
     FavoriteFragment favoriteFragment = new FavoriteFragment();
     PlaylistFragment playlistFragment = new PlaylistFragment();
@@ -150,22 +215,67 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         return songDataArrayList;
     }
 
+    private void getIntentMethod() {
+        position = getIntent().getIntExtra("position", 0);
+        listOfSongs = songDataArrayList;
+        if (listOfSongs != null) {
+            playButton.setImageResource(R.drawable.ic_pause_circle);
+            uri = Uri.parse(listOfSongs.get(position).getPath());
+        }
+        //Service Start
+        Intent intent = new Intent(this, MusicService.class);
+        intent.putExtra("servicePos", position);
+        intent.putExtra("Activity", "MainActivity");
+        startService(intent);
+    }
+
+    private byte[] getAlbumArt(String path) {
+        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+        try {
+            retriever.setDataSource(path);
+            byte[] art = retriever.getEmbeddedPicture();
+            retriever.release();
+            return art;
+        } catch (Exception e) {
+            Log.e("AlbumArt : ", path);
+        }
+        return null;
+    }
+
     @Override
     protected void onDestroy() {
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         notificationManager.cancel(0);
-
-
         super.onDestroy();
+    }
+
+    @Override
+    protected void onPause() {
+        SharedPreferences sharedPref = this.getSharedPreferences(SONG_SORT_PREF, MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putInt("position", position);
+        editor.apply();
+        super.onPause();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        Intent intent = new Intent(this, MusicService.class);
+        bindService(intent, this, BIND_AUTO_CREATE);
         SharedPreferences preferences = getSharedPreferences(MUSIC_FILE_LAST_PLAYED, MODE_PRIVATE);
         String value = preferences.getString(MUSIC_FILE, null);
         String songname = preferences.getString(SONG_NAME, null);
         String artistname = preferences.getString(ARTIST_NAME, null);
+        if (musicService != null) {
+            if (musicService.isPlaying()) {
+                playButton.setImageResource(R.drawable.ic_round_pause);
+            } else {
+                playButton.setImageResource(R.drawable.ic_round_play_arrow);
+            }
+        } else {
+            playButton.setImageResource(R.drawable.ic_round_play_arrow);
+        }
         if (value != null) {
             SHOW_BOTTOM_PLAYER = true;
             PATH_TO_BOTTOMPLAYER = value;
@@ -179,4 +289,163 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         }
     }
 
+    @Override
+    public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+        Toast.makeText(this, "Service Connected", Toast.LENGTH_LONG).show();
+        MusicService.LocalBinder localBinder = (MusicService.LocalBinder) iBinder;
+        musicService = localBinder.getService();
+        musicService.setCallBacks(this);
+        songName.setText(listOfSongs.get(position).getTitle());
+        songArtist.setText(listOfSongs.get(position).getArtist());
+        Glide.with(this)
+                .asBitmap()
+                .load(getAlbumArt(uri.toString()))
+                .placeholder(R.drawable.ic_music_cover)
+                .into(albumArt);
+        musicService.showNotification(R.drawable.round_play_arrow);
+        musicService.OnCompleted();
+    }
+
+    @Override
+    public void onServiceDisconnected(ComponentName componentName) {
+        musicService = null;
+    }
+
+    @Override
+    public void playPauseBtnClicked() {
+        Toast.makeText(getBaseContext(), "Play/Pause", Toast.LENGTH_LONG).show();
+        if (musicService.isPlaying()) {
+            playButton.setImageResource(R.drawable.ic_round_play_arrow);
+            TRACK_PLAYING = false;
+            musicService.showNotification(R.drawable.ic_round_play_arrow);
+            musicService.pause();
+        } else {
+            playButton.setImageResource(R.drawable.ic_round_pause);
+            TRACK_PLAYING = false;
+            musicService.showNotification(R.drawable.ic_round_pause);
+            musicService.start();
+        }
+    }
+
+    private int getRandomPos(int i) {
+        Random random = new Random();
+        return random.nextInt(i + 1);
+    }
+
+    @Override
+    public void nextBtnClicked() {
+        Toast.makeText(getBaseContext(), "Next", Toast.LENGTH_LONG).show();
+        if (musicService.isPlaying()) {
+            musicService.stop();
+            musicService.release();
+            int i = position;
+            if (orderBool) {
+                position = ((position + 1) % listOfSongs.size());
+            } else if (shuffleBool) {
+                position = getRandomPos(listOfSongs.size() - 1);
+            } else if (repeatBool) {
+                position = ((position + 1) % listOfSongs.size());
+            } else {
+                position = i;
+            }
+            uri = Uri.parse(listOfSongs.get(position).getPath());
+            musicService.createMediaPlayer(position);
+            songName.setText(listOfSongs.get(position).getTitle());
+            songArtist.setText(listOfSongs.get(position).getArtist());
+            Glide.with(this)
+                    .asBitmap()
+                    .load(getAlbumArt(uri.toString()))
+                    .placeholder(R.drawable.ic_music_cover)
+                    .into(albumArt);
+            musicService.OnCompleted();
+            musicService.showNotification(R.drawable.round_pause_24);
+            playButton.setImageResource(R.drawable.round_pause_24);
+            musicService.start();
+        } else {
+            musicService.stop();
+            musicService.release();
+            int i = position;
+            if (orderBool) {
+                position = ((position + 1) % listOfSongs.size());
+            } else if (shuffleBool) {
+                position = getRandomPos(listOfSongs.size() - 1);
+            } else if (repeatBool) {
+                position = ((position + 1) % listOfSongs.size());
+            } else {
+                position = i;
+            }
+//            position = ((position + 1) % listOfSongs.size());
+            uri = Uri.parse(listOfSongs.get(position).getPath());
+            musicService.createMediaPlayer(position);
+            songName.setText(listOfSongs.get(position).getTitle());
+            songArtist.setText(listOfSongs.get(position).getArtist());
+            Glide.with(this)
+                    .asBitmap()
+                    .load(getAlbumArt(uri.toString()))
+                    .placeholder(R.drawable.ic_music_cover)
+                    .into(albumArt);
+            musicService.OnCompleted();
+            musicService.showNotification(R.drawable.ic_pause_circle);
+            playButton.setImageResource(R.drawable.ic_pause_circle);
+            musicService.start();
+        }
+    }
+
+    @Override
+    public void prevBtnClicked() {
+        Toast.makeText(getBaseContext(), "Prev", Toast.LENGTH_LONG).show();
+        if (musicService.isPlaying()) {
+            musicService.stop();
+            musicService.release();
+            int i = position;
+            if (orderBool) {
+                position = ((position - 1) < 0 ? (listOfSongs.size() - 1) : (position - 1));
+            } else if (shuffleBool) {
+                position = getRandomPos(listOfSongs.size() - 1);
+            } else if (repeatBool) {
+                position = ((position - 1) < 0 ? (listOfSongs.size() - 1) : (position - 1));
+            } else {
+                position = i;
+            }
+            uri = Uri.parse(listOfSongs.get(position).getPath());
+            musicService.createMediaPlayer(position);
+            songName.setText(listOfSongs.get(position).getTitle());
+            songArtist.setText(listOfSongs.get(position).getArtist());
+            musicService.OnCompleted();
+            Glide.with(this)
+                    .asBitmap()
+                    .load(getAlbumArt(uri.toString()))
+                    .placeholder(R.drawable.ic_music_cover)
+                    .into(albumArt);
+            musicService.showNotification(R.drawable.ic_pause_circle);
+            playButton.setImageResource(R.drawable.ic_pause_circle);
+            musicService.start();
+        } else {
+            musicService.stop();
+            musicService.release();
+            int i = position;
+            if (orderBool) {
+                position = ((position - 1) < 0 ? (listOfSongs.size() - 1) : (position - 1));
+            } else if (shuffleBool) {
+                position = getRandomPos(listOfSongs.size() - 1);
+            } else if (repeatBool) {
+                position = ((position - 1) < 0 ? (listOfSongs.size() - 1) : (position - 1));
+            } else {
+                position = i;
+            }
+            uri = Uri.parse(listOfSongs.get(position).getPath());
+            musicService.createMediaPlayer(position);
+            songName.setText(listOfSongs.get(position).getTitle());
+            songArtist.setText(listOfSongs.get(position).getArtist());
+            Glide.with(this)
+                    .asBitmap()
+                    .load(getAlbumArt(uri.toString()))
+                    .placeholder(R.drawable.ic_music_cover)
+                    .into(albumArt);
+            musicService.OnCompleted();
+            musicService.showNotification(R.drawable.ic_pause_circle);
+            playButton.setImageResource(R.drawable.ic_pause_circle);
+            musicService.start();
+        }
+    }
 }

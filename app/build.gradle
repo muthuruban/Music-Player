@@ -4,14 +4,6 @@ plugins {
 }
 android {
 
-    signingConfigs {
-        debug {
-            storeFile file('C:\\Users\\91996\\Desktop\\fargkey.jks')
-            storePassword 'Shruthika@111'
-            keyAlias 'key0'
-            keyPassword 'Shruthika@111'
-        }
-    }
     compileSdkVersion 31
     buildToolsVersion "30.0.3"
 
@@ -36,6 +28,9 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+    }
+    buildFeatures {
+        viewBinding true
     }
 }
 

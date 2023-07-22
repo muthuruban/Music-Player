@@ -17,6 +17,7 @@ import android.os.IBinder;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.util.Log;
 import android.widget.RemoteViews;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -24,12 +25,12 @@ import androidx.core.app.NotificationCompat;
 import com.devlover.musicplayer.R;
 import com.devlover.musicplayer.activity.NowPlayingActivity;
 import com.devlover.musicplayer.fragments.BottomPlayerUpdates;
-import com.devlover.musicplayer.fragments.NowPlayingBottomFragment;
 import com.devlover.musicplayer.model.SongData;
 import com.devlover.musicplayer.utilities.NotificationReceiver;
 
 import java.util.ArrayList;
 
+import static com.devlover.musicplayer.activity.MainActivity.songDataArrayList;
 import static com.devlover.musicplayer.activity.NowPlayingActivity.TRACK_PLAYING;
 import static com.devlover.musicplayer.activity.NowPlayingActivity.listOfSongs;
 import static com.devlover.musicplayer.playback.ApplicationClass.ACTION_NEXT;
@@ -41,7 +42,7 @@ import static com.devlover.musicplayer.playback.ApplicationClass.CHANNEL_ID_2;
 public class MusicService extends Service implements MediaPlayer.OnCompletionListener {
     IBinder iBinder = new LocalBinder();
     MediaPlayer mediaPlayer;
-    public ArrayList<SongData> songDataArrayList = new ArrayList<>();
+    public ArrayList<SongData> songDataArrayListServ = new ArrayList<>();
     Uri uri;
     public int position = -1;
     ActionPlayControls actionPlayControls;
@@ -76,11 +77,28 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        int intentedPos = intent.getIntExtra("servicePos", -1);
+        int intentedPos = intent.getIntExtra("servicePos", 0);
         String actionName = intent.getStringExtra("ActionName");
-        if (intentedPos != -1) {
-            playSong(intentedPos);
+        String activityFrom = intent.getStringExtra("Activity");
+        if (activityFrom != null) {
+            switch(activityFrom) {
+                case "MainActivity":
+                    Toast.makeText(this,"MainActivity",Toast.LENGTH_LONG).show();
+                    loadSong(intentedPos);
+                    break;
+                case "SongListActivity":
+                    Toast.makeText(this,"Song",Toast.LENGTH_LONG).show();
+                    playSong(intentedPos);
+                    break;
+                case "BottomPlayer":
+                    Toast.makeText(this,"Player",Toast.LENGTH_LONG).show();
+                    if(mediaPlayer!=null){
+                    mediaPlayer.pause();
+                    mediaPlayer.start();}
+                    break;
+            }
         }
+        playSong(intentedPos);
         if (actionName != null) {
             switch (actionName) {
                 case "playPause":
@@ -97,17 +115,17 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
                     break;
             }
         }
-//        playSong(position);
+        playSong(position);
         return START_STICKY;
     }
 
     private void playSong(int Initposition) {
-        songDataArrayList = listOfSongs;
+        songDataArrayListServ = songDataArrayList;
         position = Initposition;
         if (mediaPlayer != null) {
             mediaPlayer.stop();
             mediaPlayer.release();
-            if (songDataArrayList != null) {
+            if (songDataArrayListServ != null) {
                 createMediaPlayer(position);
                 mediaPlayer.start();
                 TRACK_PLAYING = true;
@@ -118,6 +136,21 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
             mediaPlayer.start();
         }
 
+    }
+
+    private void loadSong(int Initposition) {
+        songDataArrayListServ = songDataArrayList;
+        position = Initposition;
+        if (songDataArrayListServ != null) {
+            createMediaPlayer(position);
+            mediaPlayer.start();
+            TRACK_PLAYING = false;
+
+        } else {
+            createMediaPlayer(position);
+            TRACK_PLAYING = false;
+            mediaPlayer.start();
+        }
     }
 
     public void start() {
@@ -157,12 +190,12 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
 
     public void createMediaPlayer(int positionLocal) {
         position = positionLocal;
-        uri = Uri.parse(songDataArrayList.get(position).getPath());
+        uri = Uri.parse(songDataArrayListServ.get(position).getPath());
         //SharedPreferences
         SharedPreferences.Editor editor = getSharedPreferences(MUSIC_FILE_LAST_PLAYED, MODE_PRIVATE).edit();
         editor.putString(MUSIC_FILE, uri.toString());
-        editor.putString(ARTIST_NAME, songDataArrayList.get(position).getArtist());
-        editor.putString(SONG_NAME, songDataArrayList.get(position).getTitle());
+        editor.putString(ARTIST_NAME, songDataArrayListServ.get(position).getArtist());
+        editor.putString(SONG_NAME, songDataArrayListServ.get(position).getTitle());
         editor.apply();
         mediaPlayer = MediaPlayer.create(getBaseContext(), uri);
     }
@@ -176,13 +209,13 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
         if (actionPlayControls != null) {
             actionPlayControls.nextBtnClicked();
         }
-        if(bottomPlayerUpdates!=null)
+        if (bottomPlayerUpdates != null)
             bottomPlayerUpdates.updateBottomPlayer();
-//        if (mediaPlayer != null) {
-//            createMediaPlayer(position);
-//            mediaPlayer.start();
-//            OnCompleted();
-//        }
+        if (mediaPlayer != null) {
+            createMediaPlayer(position);
+            mediaPlayer.start();
+            OnCompleted();
+        }
     }
 
     public void setCallBacks(ActionPlayControls actionPlayControls) {
@@ -205,7 +238,7 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
         PendingIntent nextInfoIntent = PendingIntent
                 .getBroadcast(this, 0, nextIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         byte[] notifyPic = null;
-        notifyPic = getAlbumArt(songDataArrayList.get(position).getPath());
+        notifyPic = getAlbumArt(songDataArrayListServ.get(position).getPath());
         Bitmap notifyThumb = null;
         if (notifyPic != null) {
             notifyThumb = BitmapFactory.decodeByteArray(notifyPic, 0, notifyPic.length);
@@ -215,15 +248,15 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             //New Code
-            RemoteViews mContentViews = new RemoteViews(getPackageName(),R.layout.custom_notification);
-            mContentViews.setImageViewBitmap(R.id.notify_album_art,notifyThumb);
-            mContentViews.setTextViewText(R.id.notify_music_name,songDataArrayList.get(position).getTitle());
-            mContentViews.setTextViewText(R.id.notify_album_name,songDataArrayList.get(position).getAlbum());
-            mContentViews.setOnClickPendingIntent(R.id.action_prev,prevInfoIntent);
-            mContentViews.setOnClickPendingIntent(R.id.action_play,playInfoIntent);
-            mContentViews.setOnClickPendingIntent(R.id.action_next,nextInfoIntent);
+            RemoteViews mContentViews = new RemoteViews(getPackageName(), R.layout.custom_notification);
+            mContentViews.setImageViewBitmap(R.id.notify_album_art, notifyThumb);
+            mContentViews.setTextViewText(R.id.notify_music_name, songDataArrayListServ.get(position).getTitle());
+            mContentViews.setTextViewText(R.id.notify_album_name, songDataArrayListServ.get(position).getAlbum());
+            mContentViews.setOnClickPendingIntent(R.id.action_prev, prevInfoIntent);
+            mContentViews.setOnClickPendingIntent(R.id.action_play, playInfoIntent);
+            mContentViews.setOnClickPendingIntent(R.id.action_next, nextInfoIntent);
 
-            NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this,CHANNEL_ID_2);
+            NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, CHANNEL_ID_2);
             mBuilder.setContentIntent(infoIntent);
             mBuilder.setSmallIcon(R.drawable.ic_round_music_ico_24);
             mBuilder.setSound(null);
@@ -235,18 +268,18 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
             notification.flags |= Notification.FLAG_ONGOING_EVENT | Notification.FLAG_NO_CLEAR;
 //            startForeground(2,notification.build());
             NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-            notificationManager.notify(0,notification);
+            notificationManager.notify(0, notification);
 
         } else {
-            RemoteViews mContentViews = new RemoteViews(getPackageName(),R.layout.custom_notification);
-            mContentViews.setImageViewBitmap(R.id.notify_album_art,notifyThumb);
-            mContentViews.setTextViewText(R.id.notify_music_name,songDataArrayList.get(position).getTitle());
-            mContentViews.setTextViewText(R.id.notify_album_name,songDataArrayList.get(position).getAlbum());
-            mContentViews.setOnClickPendingIntent(R.id.action_prev,prevInfoIntent);
-            mContentViews.setOnClickPendingIntent(R.id.action_play,playInfoIntent);
-            mContentViews.setOnClickPendingIntent(R.id.action_next,nextInfoIntent);
+            RemoteViews mContentViews = new RemoteViews(getPackageName(), R.layout.custom_notification);
+            mContentViews.setImageViewBitmap(R.id.notify_album_art, notifyThumb);
+            mContentViews.setTextViewText(R.id.notify_music_name, songDataArrayListServ.get(position).getTitle());
+            mContentViews.setTextViewText(R.id.notify_album_name, songDataArrayListServ.get(position).getAlbum());
+            mContentViews.setOnClickPendingIntent(R.id.action_prev, prevInfoIntent);
+            mContentViews.setOnClickPendingIntent(R.id.action_play, playInfoIntent);
+            mContentViews.setOnClickPendingIntent(R.id.action_next, nextInfoIntent);
 
-            NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this,CHANNEL_ID_2);
+            NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, CHANNEL_ID_2);
             mBuilder.setContentIntent(infoIntent);
             mBuilder.setSmallIcon(R.drawable.ic_round_music_ico_24);
             mBuilder.setSound(null);
@@ -258,7 +291,7 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
             notification.flags |= Notification.FLAG_ONGOING_EVENT | Notification.FLAG_NO_CLEAR;
 //            startForeground(2,notification.build());
             NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-            notificationManager.notify(0,notification);
+            notificationManager.notify(0, notification);
         }
 
     }
